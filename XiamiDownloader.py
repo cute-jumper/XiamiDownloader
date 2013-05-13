@@ -116,16 +116,22 @@ def search_xiami(keyword):
     return map(lambda x: (int)(x.children.next()['value']), chkboxes), zip(*elems)
     
 if __name__ == '__main__':
-    (result_ids, search_results) = search_xiami('谢安琪')
+    if len(sys.argv) != 2:
+        print '\033[0;32m[Usage]:\033[0m python ' + __file__ + " keyword"
+        sys.exit(1)
+    print len(sys.argv)
+    (result_ids, search_results) = search_xiami(sys.argv[1])
     output_search_results(search_results)
     while True:
-        input_num = (int)(raw_input('Please select a number: '))
-        if input_num < 1 or input_num > len(search_results):
-            print "Error. Please select a number again!"
-        else:
+        try:
+            input_num = (int)(raw_input('Please input a song number: '))
+            if input_num < 1 or input_num > len(search_results):
+                raise Exception
             break
+        except:
+            print "Error. Please input a number again!"
     sel = search_results[input_num - 1]
-    print 'Begin downloading file...'
+    print 'Download begins...Please wait'
     urllib.urlretrieve(parse_song_info(result_ids[input_num - 1])['location'], "%s_%s.mp3" %(sel[0], sel[1]))
     print 'Finished!'
     
