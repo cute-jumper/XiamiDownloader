@@ -1,0 +1,17 @@
+* XiamiDownloader
+** Overview
+This python script can download music from http://www.xiami.com
+** Usage
+   Open a terminal and type:
+   :python XiamiDownloader.py keyword
+
+   It will search http://www.xiami.com using the *keyword* and present the
+   results in the terminal. You can type a number to choose a song to download
+   or type "q" to quit.
+** Reference
+   This [[http://seorss.net/get-xiami-music.html][article]] explains how to obtain the real url for a song using the unique
+   song id. I modify the original implementation and make it more easy to
+   understand and more compact. In fact, the decoding process is just like
+   'transposing a matrix'. See my implementation to get more details^_^.
+** Screenshot
+   [[./screenshot.png][Here]]
