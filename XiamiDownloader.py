@@ -215,7 +215,8 @@ if __name__ == '__main__':
         print 'No results found!'
         sys.exit(0)
     output_search_results(search_results)
-    sel_num = get_user_input()
-    sel_result = search_results[sel_num - 1]
-    sel_id = result_ids[sel_num - 1]
-    download_music(sel_result, sel_id)
+    while True:
+        sel_num = get_user_input()
+        sel_result = search_results[sel_num - 1]
+        sel_id = result_ids[sel_num - 1]
+        download_music(sel_result, sel_id)
