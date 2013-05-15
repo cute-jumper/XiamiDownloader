@@ -3,7 +3,7 @@
 This python script can download music from http://www.xiami.com
 ** Usage
    Open a terminal and type:
-   :python XiamiDownloader.py keyword
+   :python XiamiDownloader.py [keyword]
 
    It will search http://www.xiami.com using the *keyword* and present the
    results in the terminal. You can type a number to choose a song to download

@@ -18,7 +18,7 @@ search_result_col_width = 20
 xml_url_template = 'http://www.xiami.com/song/playlist/id/{song_id}/object_name/default/object_id/0'
 xml_tagname_list = ['title', 'artist', 'location', 'lyric', 'pic']
 
-request_headers = {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:20.0) Gecko/20100101 Firefox/20.0'}
+request_headers = {'User-Agent': 'You Know What Browser'}
 
 def xiami_urlopen(url):
     '''Xiami will not allow using bare urlopen.
@@ -72,9 +72,10 @@ def search_xiami(keyword):
     return song_ids, zip(*elems)
 
 def output_song_info(song_info):
-    for i in xml_tagname_list:
-        print '\033[1;36m[' + i + ']:\033[0m ' + song_info[i]
-    print
+    print color_text('hcrimson', '* Song Information')
+    max_tagname_len = max(map(len, xml_tagname_list))
+    for tagname in xml_tagname_list:
+        print '  - ' + color_text('yellow', '[' + tagname + ']') + ' ' * (max_tagname_len - len(tagname)) + ' : ' + song_info[tagname]
 
 def output_search_results(results):
     # Helper functions for output only
@@ -89,8 +90,9 @@ def output_search_results(results):
             yield acc
     def get_display_len_array(text):
         return [0] + list(scanl(add, 0, map(display_len, text)))
-    def get_row_text_generator(text, display_len_array):
+    def get_row_text_generator(text):
         '''Return the generator for a certain column'''
+        display_len_array = get_display_len_array(text)
         def get_row_text():
             start = 0
             while start < len(display_len_array) - 1:
@@ -120,7 +122,7 @@ def output_search_results(results):
                       for i in search_result_classes_zh])
     for row_num, res in enumerate(results, 1):
         print horizon_line
-        row_text_generators = map(lambda x: get_row_text_generator(x, get_display_len_array(x)), res)
+        row_text_generators = map(get_row_text_generator, res)
         is_first = True
         while True:
             col_text_array = map(lambda x: x.next(), row_text_generators)
@@ -161,6 +163,28 @@ def humanize_bytes(bytes, precision=1):
             break
     return '%.*f %s' % (precision, bytes / factor, suffix)
 
+bold_color_to_code = {'gray':'1;30',
+                 'red': '1;31',
+                 'green': '1;32',
+                 'yellow': '1;33',
+                 'blue': '1;34',
+                 'magenta': '1;35',
+                 'cyan': '1;36',
+                 'white': '1;37',
+                 'crimson': '1;38',
+                 'hred': '1;41',
+                 'hgreen': '1;42',
+                 'hbrown': '1;43',
+                 'hblue': '1;44',
+                 'hmagenta': '1;45',
+                 'hcyan': '1;46',
+                 'hgray': '1;47',
+                 'hcrimson': '1;48',
+                 }
+def color_text(color, text):
+    code = bold_color_to_code.get(color.lower(), '0')
+    return '\033[%sm%s\033[0m' %(code, text)
+
 # My exceptions
 class InputException(Exception):
     pass
@@ -197,20 +221,26 @@ def download_music(sel_result, sel_id):
                                                  humanize_bytes(count * block_size)))
         sys.stdout.flush()
     saved_file_name = "%s-%s.mp3" %(sel_result[0], sel_result[1])
-    (retrieve_ret, used_time) = timeit(urllib.urlretrieve)(parse_song_info(sel_id)['location'],
+    sel_song_info = parse_song_info(sel_id)
+    output_song_info(sel_song_info)
+    (retrieve_ret, used_time) = timeit(urllib.urlretrieve)(sel_song_info['location'],
                                                           saved_file_name,
                                                           download_progress)
     download_size = long(retrieve_ret[1]['content-length'])
     print '\nFetched %s in %.1fs (%s/s)' %(humanize_bytes(download_size),
                                            used_time,
                                            humanize_bytes(1.0 * download_size / used_time))
-    print "Saved to file '%s'" %saved_file_name
+    print "Saved to file '%s'" %color_text('cyan', saved_file_name)
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print '\033[0;32m[Usage]:\033[0m python ' + __file__ + " keyword"
+    if len(sys.argv) == 1:
+        keyword = raw_input('Input a search keyword: ')
+    elif len(sys.argv) == 2:
+        keyword = sys.argv[1]
+    else:
+        print color_text('green', '[Usage]:') + ' python ' + __file__ + " [keyword]"
         sys.exit(1)
-    (result_ids, search_results) = search_xiami(sys.argv[1])
+    (result_ids, search_results) = search_xiami(keyword)
     if len(search_results) == 0:
         print 'No results found!'
         sys.exit(0)
