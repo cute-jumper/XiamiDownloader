@@ -4,7 +4,7 @@
 # Date: <2013-05-13 Mon>
 
 from __future__ import division
-import sys, math, urllib, urllib2, time
+import sys, math, urllib, urllib2, time, os
 from xml.dom.minidom import parse
 from itertools import izip_longest, takewhile
 from operator import add
@@ -14,6 +14,7 @@ search_url_template = 'http://www.xiami.com/search?key={keyword}'
 search_result_classes = [u'song_name', u'song_artist', u'song_album']
 search_result_classes_zh = [u'歌曲', u'歌手', u'专辑']
 search_result_col_width = 20
+default_music_dir = os.path.expanduser('~/Music')
 
 xml_url_template = 'http://www.xiami.com/song/playlist/id/{song_id}/object_name/default/object_id/0'
 xml_tagname_list = ['title', 'artist', 'location', 'lyric', 'pic']
@@ -191,7 +192,7 @@ class InputException(Exception):
 class NumberRangeException(Exception):
     pass
 
-def get_user_input():
+def get_user_select():
     while True:
         try:
             user_input = raw_input('Please input a song number("q" to quit): ')
@@ -203,7 +204,9 @@ def get_user_input():
                     break
                 raise NumberRangeException()
         except (KeyboardInterrupt, InputException):
-            sys.exit(1)
+            print color_text('red', 'No song has been selected. Maybe try another keyword?')
+            sel_num = None
+            break
         except NumberRangeException:
             print "Error. Please input a number between {low} and {high}!".format(low=1, high=len(search_results))
         except:
@@ -224,29 +227,51 @@ def download_music(sel_result, sel_id):
     sel_song_info = parse_song_info(sel_id)
     output_song_info(sel_song_info)
     (retrieve_ret, used_time) = timeit(urllib.urlretrieve)(sel_song_info['location'],
-                                                          saved_file_name,
+                                                          os.path.join(default_music_dir, saved_file_name),
                                                           download_progress)
     download_size = long(retrieve_ret[1]['content-length'])
     print '\nFetched %s in %.1fs (%s/s)' %(humanize_bytes(download_size),
                                            used_time,
                                            humanize_bytes(1.0 * download_size / used_time))
     print "Saved to file '%s'" %color_text('cyan', saved_file_name)
+    
+def get_user_keyword():
+    try:
+        keyword = raw_input('Input a search keyword("Ctrl-C" to exit): ')
+    except KeyboardInterrupt:
+        import platform
+        if platform.platform().lower().find('linux') != -1:
+            # OK, I assume you are using Linux and have "fortune" installed in your system...
+            from subprocess import check_output
+            try:
+                output = check_output(['fortune'])
+                print "\n", color_text('green', "<--------------------fortune-------------------->")
+                print output,
+                print color_text('green', "<--------------------  end  -------------------->")
+                print 'Have a good day!'
+            except:
+                pass
+        sys.exit(0)
+    return keyword
+    
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        keyword = raw_input('Input a search keyword: ')
+        keyword = get_user_keyword()
     elif len(sys.argv) == 2:
         keyword = sys.argv[1]
     else:
         print color_text('green', '[Usage]:') + ' python ' + __file__ + " [keyword]"
         sys.exit(1)
-    (result_ids, search_results) = search_xiami(keyword)
-    if len(search_results) == 0:
-        print 'No results found!'
-        sys.exit(0)
-    output_search_results(search_results)
     while True:
-        sel_num = get_user_input()
-        sel_result = search_results[sel_num - 1]
-        sel_id = result_ids[sel_num - 1]
-        download_music(sel_result, sel_id)
+        (result_ids, search_results) = search_xiami(keyword)
+        if len(search_results):
+            output_search_results(search_results)
+            sel_num = get_user_select()
+            if sel_num:
+                sel_result = search_results[sel_num - 1]
+                sel_id = result_ids[sel_num - 1]
+                download_music(sel_result, sel_id)
+        else:
+            print 'No results found! Try another keyword'
+        keyword = get_user_keyword()
