@@ -65,10 +65,10 @@ def search_xiami(keyword):
     soup = BS(xiami_urlopen(search_url).read())
     box = soup.find('div', {'class': 'search_result_box'})
     # Get all song ids
-    song_ids = map(lambda x: (int)(x.children.next()['value']),
+    song_ids = map(lambda x: (int)(x.findChild('input')['value']),
                    box.find_all('td', {'class': 'chkbox'}))
     # Get all song texts
-    elems = [map(lambda elem: elem.text, box.find_all('td', {'class': classname}))
+    elems = [map(lambda elem: ''.join(elem.stripped_strings), box.find_all('td', {'class': classname}))
              for classname in search_result_classes]
     return song_ids, zip(*elems)
 
