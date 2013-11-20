@@ -10,11 +10,14 @@ from itertools import izip_longest, takewhile
 from operator import add
 from bs4 import BeautifulSoup as BS
 
+# Personal configuration here
+default_music_dir = os.path.expanduser('~/Music')
+
+# Code
 search_url_template = 'http://www.xiami.com/search?key={keyword}'
 search_result_classes = [u'song_name', u'song_artist', u'song_album']
 search_result_classes_zh = [u'歌曲', u'歌手', u'专辑']
 search_result_col_width = 20
-default_music_dir = os.path.expanduser('~/Music')
 
 xml_url_template = 'http://www.xiami.com/song/playlist/id/{song_id}/object_name/default/object_id/0'
 xml_tagname_list = ['title', 'artist', 'location', 'lyric', 'pic']
@@ -233,7 +236,7 @@ def download_music(sel_result, sel_id):
     print '\nFetched %s in %.1fs (%s/s)' %(humanize_bytes(download_size),
                                            used_time,
                                            humanize_bytes(1.0 * download_size / used_time))
-    print "Saved to file '%s'" %color_text('cyan', saved_file_name)
+    print "Saved to file '%s' (in folder: %s)" %(color_text('cyan', saved_file_name), default_music_dir)
     
 def get_user_keyword():
     try:
