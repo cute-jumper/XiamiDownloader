@@ -64,7 +64,7 @@ def parse_song_info(song_id):
 
 def search_xiami(keyword):
     '''Search http://www.xiami.com and return search results'''
-    search_url = search_url_template.format(keyword=keyword)
+    search_url = search_url_template.format(keyword=urllib.quote(keyword))
     soup = BS(xiami_urlopen(search_url).read())
     box = soup.find('div', {'class': 'search_result_box'})
     # Get all song ids
