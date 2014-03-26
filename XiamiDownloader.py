@@ -226,7 +226,7 @@ def download_music(sel_result, sel_id):
         sys.stdout.write("\r%3d%% [%s%s] [%s]" %(percent, finished, unfinished,
                                                  humanize_bytes(count * block_size)))
         sys.stdout.flush()
-    saved_file_name = "%s-%s.mp3" %(sel_result[0], sel_result[1])
+    saved_file_name = "%s-%s.mp3" %(sel_result[1], sel_result[0])
     sel_song_info = parse_song_info(sel_id)
     output_song_info(sel_song_info)
     (retrieve_ret, used_time) = timeit(urllib.urlretrieve)(sel_song_info['location'],
